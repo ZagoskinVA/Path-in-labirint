@@ -5,7 +5,7 @@ namespace Labirint
 {
     class Labirint
     {
-        private Queue<Cell> queue;
+        private Queue<Cell> queue; 
         private Cell[,] field;
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -26,11 +26,11 @@ namespace Labirint
             queue.Enqueue(field[0, 0]);
             field[width - 1, height - 1].CellType = CellType.Finish;
         }
-        public void GenerateWall(int count)
+        public void GenerateWall(int count) 
         {
             var rnd = new Random();
             if (count < 0)
-                throw new ArgumentException();
+                throw new ArgumentException();  
             for (int i = 0; i < count; i++)
             {
                 var x = rnd.Next(0,Width-1);
@@ -51,6 +51,7 @@ namespace Labirint
                             break;
                         case CellType.Start:
                             Console.Write("@");
+                            queue.Enqueue(field[i,j]);
                             break;
                         case CellType.Wall:
                             Console.Write("#");
@@ -69,9 +70,9 @@ namespace Labirint
 
         }
 
-        public int SearchPath()
+        public int SearchPath() // Поиск кратчайшего пути с помощью поиска в ширину
         {
-            field[0, 0].CellType = CellType.Start;
+            
             var cell = queue.Dequeue();
             while (cell.CellType != CellType.Finish)
             {
@@ -79,27 +80,27 @@ namespace Labirint
                 var y = cell.Y;
                 var step = cell.Step;
                 AddCell(x+1,y,step);
-                AddCell(x, y + 1, step);
-                AddCell(x - 1, y, step);
+                AddCell(x, y + 1, step);  // Проверка всех клеток связанной с текущей
+                AddCell(x - 1, y, step);   
                 AddCell(x, y - 1, step);
                 if (queue.Count == 0)
-                    return -1;
+                    return -1;            // Не существует пути из старта в финиш
                 cell = queue.Dequeue();
             }
-            BuildPath(cell);
-            return cell.Step;
+            BuildPath(cell); 
+            return cell.Step; // Выводим кол-во шагов до финиша
 
         }
 
         private void AddCell(int i, int j , int step)
         {
             if (i >= Width || j >= Height || i < 0 || j < 0 
-                || field[i,j].CellType == CellType.Start 
-                || field[i,j].CellType == CellType.Wall)
+                || field[i,j].CellType == CellType.Start   // Проверка условий на выход за границы 
+                || field[i,j].CellType == CellType.Wall)   
             {
                 return;
             }
-            if (field[i, j].Step == 0)
+            if (field[i, j].Step == 0) // Если клетка не помечена добавляем в очередь
             {
                 field[i, j].Step = step + 1;
                 queue.Enqueue(field[i,j]);
@@ -115,7 +116,7 @@ namespace Labirint
             }
             
         }
-        private Cell MarkCell(Cell cell)
+        private Cell MarkCell(Cell cell) // Помечаем клетки в кратчайшем пути
         {
             var x = cell.X;
             var y = cell.Y;
@@ -152,7 +153,7 @@ namespace Labirint
             }
             return false;           
         }
-        private void LoadField(string path)
+        private void LoadField(string path) // Загрузка лабиринта из txt файла
         {
             string labirint;
             using (var sr = new StreamReader(path))
