@@ -14,18 +14,6 @@ namespace Labirint
             queue = new Queue<Cell>();
             LoadField(path);
         }
-        public Labirint(int width, int height)
-        {
-            Width = width;
-            Height = height;
-            queue = new Queue<Cell>();
-            field = new Cell[width, height];
-            for (int i = 0; i < width; i++)
-                for (int j = 0; j < height; j++)
-                    field[i, j] = new Cell(i,j);
-            queue.Enqueue(field[0, 0]);
-            field[width - 1, height - 1].CellType = CellType.Finish;
-        }
         public void GenerateWall(int count) 
         {
             var rnd = new Random();
@@ -37,37 +25,6 @@ namespace Labirint
                 var y = rnd.Next(0, Height-1);
                 field[x, y].CellType = CellType.Wall;
             }
-        }
-        public void ShowLabirint()
-        {
-            for (int i = 0; i < Width; i++)
-            {
-                for (int j = 0; j < Height; j++)
-                {
-                    switch (field[i, j].CellType)
-                    {
-                        case CellType.Empty:
-                            Console.Write(".");
-                            break;
-                        case CellType.Start:
-                            Console.Write("@");
-                            queue.Enqueue(field[i,j]);
-                            break;
-                        case CellType.Wall:
-                            Console.Write("#");
-                            break;
-                        case CellType.Finish:
-                            Console.Write("F");
-                            break;
-                        case CellType.Path:
-                            Console.Write("/");
-                            break;
-                    }
-                }
-                Console.WriteLine();
-            }
-
-
         }
 
         public int SearchPath() // Поиск кратчайшего пути с помощью поиска в ширину
@@ -158,34 +115,31 @@ namespace Labirint
             string labirint;
             using (var sr = new StreamReader(path))
             {
-                 labirint = sr.ReadToEnd();
-            }
-            var split = labirint.Split('\n');
-            field = new Cell[split.Length, split[0].Length];
-            Width = split.Length;
-            Height = split[0].Length - 1;
-            for (int i = 0; i < split.Length; i++)
-            {
-                for (int j = 0; j < split[i].Length; j++)
+                var str = sr.ReadLine().Split(' ');
+                Height = int.Parse(str[0]);
+                Width = int.Parse(str[1]);
+                for (int i = 0; i < Height; i++) 
                 {
-                    field[i, j] = new Cell(i,j);
-                    switch (split[i][j])
+                    str = sr.ReadLine();
+                    for (int j = 0; j < Width; j++) 
                     {
-                        case '.':
-                            field[i, j].CellType = CellType.Empty;
-                            break;
-                        case '@':
-                            field[i, j].CellType = CellType.Start;
-                            queue.Enqueue(field[i, j]);
-                            break;
-                        case '#':
-                            field[i, j].CellType = CellType.Wall;
-                            break;
-                        case 'F':
-                            field[i, j].CellType = CellType.Finish;
-                            break;
+                        field[i, j] = new Cell(i, j);
+                        switch (str[j]) 
+                        {
+                            case '-':
+                                field[i, j].CellType = CellType.Empty;
+                                break;
+                            case 'x':
+                                field[i, j].CellType = CellType.Wall;
+                                break;
+                        }
                     }
                 }
+                str = sr.ReadLine().Split(' ');
+                field[int.Parse(str[0]), int.Parse(str[1])].CellType = CellType.Start;
+                queue.Enqueue(field[int.Parse(str[0]), int.Parse(str[1])]);
+                str = sr.ReadLine().Split(' ');
+                field[int.Parse(str[0]), int.Parse(str[1])].CellType = CellType.Finish;
             }
         }
 
