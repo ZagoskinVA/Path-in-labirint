@@ -25,9 +25,11 @@ namespace Labirint
         public int Width { get; private set; }
         public int Height { get; private set; }
         private string startCell;
+        private List<string> path;
         public Labirint(string path)
         {
             queue = new Queue<Cell>();
+            this.path = new List<string>();
             LoadField(path);
         }
         public void GenerateWall(int count) 
@@ -40,6 +42,7 @@ namespace Labirint
                 var x = rnd.Next(0,Width-1);
                 var y = rnd.Next(0, Height-1);
                 field[x, y].CellType = CellType.Wall;
+                field[x, y].Step = -100;
             }
         }
 
@@ -89,8 +92,10 @@ namespace Labirint
             var cell = finalCell;
             while (cell.CellType != CellType.Start)
             {
+                path.Add($"{cell.X} {cell.Y}");
                 cell = MarkCell(cell);
             }
+            path.Add($"{cell.X} {cell.Y}");
             
         }
         private Cell MarkCell(Cell cell) // Помечаем клетки в кратчайшем пути
@@ -178,38 +183,12 @@ namespace Labirint
 
         public void ShowLabirint()
         {
-            var paths = new List<string>();
-            for (int i = 0; i < Height; i++)
-            {
-                for (int j = 0; j < Width; j++)
-                {
-                    switch (field[i, j].CellType)
-                    {
-                        case CellType.Empty:
-                            break;
-                        case CellType.Start:
-                            paths.Add($"{i} {j}");
-                            queue.Enqueue(field[i, j]);
-                            break;
-                        case CellType.Wall:
-                            Console.Write("#");
-                            break;
-                        case CellType.Finish:
-                            paths.Add($"{i} {j}");
-                            break;
-                        case CellType.Path:
-                            paths.Add($"{i} {j}");
-                            break;
-                    }
-                }
-            }
-            paths.Reverse();
+            path.Reverse();
             using (var wr = new StreamWriter("output.txt", true))
             {
-                foreach (var cell in paths)
+                foreach (var cell in path)
                 {
                     wr.WriteLine(cell);
-
                 }
             }
 
