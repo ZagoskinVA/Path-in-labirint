@@ -186,9 +186,12 @@ namespace Labirint
             path.Reverse();
             using (var wr = new StreamWriter("output.txt", true))
             {
-                foreach (var cell in path)
+                for (int i = 0; i < path.Count; i++) 
                 {
-                    wr.WriteLine(cell);
+                    if (i == path.Count - 1)
+                        wr.Write(path[i]);
+                    else
+                        wr.WriteLine(path[i]);
                 }
             }
 
