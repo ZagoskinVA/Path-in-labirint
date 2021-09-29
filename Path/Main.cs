@@ -5,14 +5,16 @@ namespace Labirint
 {
     class Program 
     {
-        int Main() 
+        static void Main() 
         {
             var labirint = new Labirint("input.txt");
             var result = labirint.SearchPath();
-            using (var wr = new StreamWriter('output.txt')) 
+            using (var wr = new StreamWriter("output.txt"))
             {
                 wr.WriteLine(result);
             }
+            if(result != -1)
+                labirint.ShowLabirint();
 
         }
     }
@@ -22,6 +24,7 @@ namespace Labirint
         private Cell[,] field;
         public int Width { get; private set; }
         public int Height { get; private set; }
+        private string startCell;
         public Labirint(string path)
         {
             queue = new Queue<Cell>();
@@ -49,10 +52,14 @@ namespace Labirint
                 var x = cell.X;
                 var y = cell.Y;
                 var step = cell.Step;
-                AddCell(x+1,y,step);
-                AddCell(x, y + 1, step);  // Проверка всех клеток связанной с текущей
-                AddCell(x - 1, y, step);   
-                AddCell(x, y - 1, step);
+                AddCell(x + 1,y  - 2, step);
+                AddCell(x + 1, y + 2, step);  // Проверка всех клеток связанной с текущей
+                AddCell(x - 1, y + 2, step);   
+                AddCell(x - 1, y - 2, step);
+                AddCell(x + 2, y - 1, step);
+                AddCell(x + 2, y + 1, step);  // Проверка всех клеток связанной с текущей
+                AddCell(x - 2, y + 1, step);
+                AddCell(x - 2, y - 1, step);
                 if (queue.Count == 0)
                     return -1;            // Не существует пути из старта в финиш
                 cell = queue.Dequeue();
@@ -64,7 +71,7 @@ namespace Labirint
 
         private void AddCell(int i, int j , int step)
         {
-            if (i >= Width || j >= Height || i < 0 || j < 0 
+            if (j >= Width || i >= Height || i < 0 || j < 0 
                 || field[i,j].CellType == CellType.Start   // Проверка условий на выход за границы 
                 || field[i,j].CellType == CellType.Wall)   
             {
@@ -92,17 +99,29 @@ namespace Labirint
             var y = cell.Y;
             var step = cell.Step;
             bool isNextCell;
-            isNextCell = IsNextCell(x + 1, y, step);
+            isNextCell = IsNextCell(x + 1, y - 2, step);
             if (isNextCell)
-                return field[x + 1, y];
-            isNextCell = IsNextCell(x, y + 1, step);
+                return field[x + 1, y - 2];
+            isNextCell = IsNextCell(x + 1, y + 2, step);
             if (isNextCell)
-                return field[x, y + 1];
-            isNextCell = IsNextCell(x - 1, y, step);
+                return field[x + 1, y + 2];
+            isNextCell = IsNextCell(x - 1, y + 2, step);
             if (isNextCell)
-                return field[x - 1, y];
-            isNextCell = IsNextCell(x, y - 1, step);
-            return field[x, y - 1];
+                return field[x - 1, y + 2];
+            isNextCell = IsNextCell(x - 1, y - 2, step);
+            if(isNextCell)
+                return field[x - 1, y - 2];
+            isNextCell = IsNextCell(x + 2, y - 1, step);
+            if (isNextCell)
+                return field[x + 2, y - 1];
+            isNextCell = IsNextCell(x + 2, y + 1, step);
+            if (isNextCell)
+                return field[x + 2, y + 1];
+            isNextCell = IsNextCell(x - 2, y + 1, step);
+            if (isNextCell)
+                return field[x - 2, y + 1];
+            isNextCell = IsNextCell(x - 2, y - 1, step);
+            return field[x - 2, y - 1];
         }
         private bool IsNextCell(int i, int j, int step)
         {
@@ -125,19 +144,19 @@ namespace Labirint
         }
         private void LoadField(string path) // Загрузка лабиринта из txt файла
         {
-            string labirint;
             using (var sr = new StreamReader(path))
             {
                 var str = sr.ReadLine().Split(' ');
                 Height = int.Parse(str[0]);
                 Width = int.Parse(str[1]);
+                field = new Cell[Height, Width];
                 for (int i = 0; i < Height; i++) 
                 {
-                    str = sr.ReadLine();
+                    var str1 = sr.ReadLine();
                     for (int j = 0; j < Width; j++) 
                     {
                         field[i, j] = new Cell(i, j);
-                        switch (str[j]) 
+                        switch (str1[j]) 
                         {
                             case '-':
                                 field[i, j].CellType = CellType.Empty;
@@ -151,9 +170,49 @@ namespace Labirint
                 str = sr.ReadLine().Split(' ');
                 field[int.Parse(str[0]), int.Parse(str[1])].CellType = CellType.Start;
                 queue.Enqueue(field[int.Parse(str[0]), int.Parse(str[1])]);
-                str = sr.ReadLine().Split(' ');
+                startCell = sr.ReadLine();
+                str = startCell.Split(' ');
                 field[int.Parse(str[0]), int.Parse(str[1])].CellType = CellType.Finish;
             }
+        }
+
+        public void ShowLabirint()
+        {
+            var paths = new List<string>();
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    switch (field[i, j].CellType)
+                    {
+                        case CellType.Empty:
+                            break;
+                        case CellType.Start:
+                            paths.Add($"{i} {j}");
+                            queue.Enqueue(field[i, j]);
+                            break;
+                        case CellType.Wall:
+                            Console.Write("#");
+                            break;
+                        case CellType.Finish:
+                            paths.Add($"{i} {j}");
+                            break;
+                        case CellType.Path:
+                            paths.Add($"{i} {j}");
+                            break;
+                    }
+                }
+            }
+            paths.Reverse();
+            using (var wr = new StreamWriter("output.txt", true))
+            {
+                foreach (var cell in paths)
+                {
+                    wr.WriteLine(cell);
+
+                }
+            }
+
         }
 
     }
