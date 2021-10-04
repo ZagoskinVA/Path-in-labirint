@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+
 namespace Labirint 
 {
     class Program 
     {
-        static void Main() 
+        static void Main()
         {
+            var x = new int[] { 1, 2, 3 };
             var labirint = new Labirint("input.txt");
             var result = labirint.SearchPath();
             using (var wr = new StreamWriter("output.txt"))
@@ -55,9 +58,9 @@ namespace Labirint
                 var x = cell.X;
                 var y = cell.Y;
                 var step = cell.Step;
-                AddCell(x + 1,y  - 2, step);
+                AddCell(x + 1, y  - 2, step);
                 AddCell(x + 1, y + 2, step);  // Проверка всех клеток связанной с текущей
-                AddCell(x - 1, y + 2, step);   
+                AddCell(x - 1, y + 2, step);
                 AddCell(x - 1, y - 2, step);
                 AddCell(x + 2, y - 1, step);
                 AddCell(x + 2, y + 1, step);  // Проверка всех клеток связанной с текущей
@@ -67,16 +70,16 @@ namespace Labirint
                     return -1;            // Не существует пути из старта в финиш
                 cell = queue.Dequeue();
             }
-            BuildPath(cell); 
+            BuildPath(cell);
             return cell.Step; // Выводим кол-во шагов до финиша
 
         }
 
         private void AddCell(int i, int j , int step)
         {
-            if (j >= Width || i >= Height || i < 0 || j < 0 
+            if (j >= Width || i >= Height || i < 0 || j < 0
                 || field[i,j].CellType == CellType.Start   // Проверка условий на выход за границы 
-                || field[i,j].CellType == CellType.Wall)   
+                || field[i,j].CellType == CellType.Wall)
             {
                 return;
             }
@@ -145,7 +148,7 @@ namespace Labirint
                 cell.CellType = CellType.Path;
                 return true;
             }
-            return false;           
+            return false;
         }
         private void LoadField(string path) // Загрузка лабиринта из txt файла
         {
@@ -155,10 +158,10 @@ namespace Labirint
                 Height = int.Parse(str[0]);
                 Width = int.Parse(str[1]);
                 field = new Cell[Height, Width];
-                for (int i = 0; i < Height; i++) 
+                for (int i = 0; i < Height; i++)
                 {
                     var str1 = sr.ReadLine();
-                    for (int j = 0; j < Width; j++) 
+                    for (int j = 0; j < Width; j++)
                     {
                         field[i, j] = new Cell(i, j);
                         switch (str1[j]) 
@@ -177,6 +180,16 @@ namespace Labirint
                 queue.Enqueue(field[int.Parse(str[0]), int.Parse(str[1])]);
                 startCell = sr.ReadLine();
                 str = startCell.Split(' ');
+                if (startCell == $"{str[0]} {str[]}") 
+                {1
+                    using (var wr = new StreamWriter("output.txt")) 
+                    {
+                        wr.WriteLine("0");
+                        wr.WriteLine("0 0");
+                        wr.WriteLine("0 0");
+                    }
+                    Environment.Exit(0);
+                }
                 field[int.Parse(str[0]), int.Parse(str[1])].CellType = CellType.Finish;
             }
         }
@@ -186,7 +199,7 @@ namespace Labirint
             path.Reverse();
             using (var wr = new StreamWriter("output.txt", true))
             {
-                for (int i = 0; i < path.Count; i++) 
+                for (int i = 0; i < path.Count; i++)
                 {
                     if (i == path.Count - 1)
                         wr.Write(path[i]);
